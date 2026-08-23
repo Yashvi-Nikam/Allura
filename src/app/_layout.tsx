@@ -1,6 +1,5 @@
-
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
@@ -28,39 +27,36 @@ import {
 } from '@expo-google-fonts/jost';
 import { Colors } from '@/constants/theme';
 
-// Prevent splash screen auto-hide before asset loading
-SplashScreen.preventAutoHideAsync().catch(() => {
-  /* Reload guard */
-});
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   const colors = isDark ? Colors.dark : Colors.light;
 
-  const [fontsLoaded, fontError] = useFonts({
-    DancingScript: DancingScript_400Regular,
-    DancingScript_SemiBold: DancingScript_600SemiBold,
-    DancingScript_Bold: DancingScript_700Bold,
-    CormorantGaramond: CormorantGaramond_300Light,
-    CormorantGaramond_Reg: CormorantGaramond_400Regular,
+  const [fontsLoaded] = useFonts({
+    DancingScript:            DancingScript_400Regular,
+    DancingScript_SemiBold:   DancingScript_600SemiBold,
+    DancingScript_Bold:       DancingScript_700Bold,
+    CormorantGaramond:        CormorantGaramond_300Light,
+    CormorantGaramond_Reg:    CormorantGaramond_400Regular,
     CormorantGaramond_Italic: CormorantGaramond_300Light_Italic,
     CormorantGaramond_RegItalic: CormorantGaramond_400Regular_Italic,
-    Raleway: Raleway_300Light,
-    Raleway_ExtraLight: Raleway_200ExtraLight,
-    Raleway_Regular: Raleway_400Regular,
-    Jost: Jost_300Light,
-    Jost_Regular: Jost_400Regular,
-    Jost_Medium: Jost_500Medium,
+    Raleway:                  Raleway_300Light,
+    Raleway_ExtraLight:       Raleway_200ExtraLight,
+    Raleway_Regular:          Raleway_400Regular,
+    Jost:                     Jost_300Light,
+    Jost_Regular:             Jost_400Regular,
+    Jost_Medium:              Jost_500Medium,
   });
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded]);
 
-  if (!fontsLoaded && !fontError) return null;
+  if (!fontsLoaded) return null;
 
   return (
     <>
@@ -71,7 +67,19 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.background },
           animation: 'fade',
         }}
-      />
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="home" />
+        <Stack.Screen name="context" />
+        <Stack.Screen name="result" />
+        <Stack.Screen name="outfit-detail" />
+        <Stack.Screen name="wardrobe" />
+        <Stack.Screen name="wardrobe-add" />
+        <Stack.Screen name="saved" />
+        <Stack.Screen name="profile" />
+      </Stack>
     </>
   );
 }
+
