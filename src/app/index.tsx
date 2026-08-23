@@ -9,10 +9,22 @@ import {
   StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import Svg, { Circle, Path, Polygon, Line, G } from 'react-native-svg';
+import Svg, { Circle, Path, Polygon, Line, G, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 const Ornament = ({ size = 120 }: { size?: number }) => (
   <Svg width={size} height={size} viewBox="0 0 200 200" fill="none">
+    <Defs>
+      {/* Soft golden glow contained strictly behind the flower petals */}
+      <RadialGradient id="petalGlow" cx="50%" cy="50%" r="50%">
+        <Stop offset="0%" stopColor="#C9AB85" stopOpacity="0.35" />
+        <Stop offset="60%" stopColor="#C9AB85" stopOpacity="0.1" />
+        <Stop offset="100%" stopColor="#13111A" stopOpacity="0" />
+      </RadialGradient>
+    </Defs>
+
+    {/* Localized Petal Glow Circle */}
+    <Circle cx="100" cy="100" r="75" fill="url(#petalGlow)" />
+
     {/* Outer Dual Rings */}
     <Circle cx="100" cy="100" r="85" stroke="#C9AB85" strokeWidth="0.8" opacity={0.5} />
     <Circle cx="100" cy="100" r="70" stroke="#C9AB85" strokeWidth="0.6" opacity={0.35} />
@@ -49,7 +61,7 @@ const Ornament = ({ size = 120 }: { size?: number }) => (
 
 export default function SplashScreen() {
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
   // Scale factor based on standard mobile width (375px)
   const scale = width / 375;
@@ -134,12 +146,6 @@ export default function SplashScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#13111A" />
-      
-      {/* Background Radial Ambient Glow */}
-      <View style={[
-        styles.glow, 
-        { width: width * 0.75, height: width * 0.75, borderRadius: width * 0.375, top: height * 0.22 }
-      ]} />
 
       {/* 1. Pinwheel Flower Emblem */}
       <Animated.View style={[
@@ -209,51 +215,48 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  glow: {
-    position: 'absolute',
-    backgroundColor: 'rgba(201, 171, 133, 0.04)',
-    alignSelf: 'center',
-  },
   ornamentWrap: {
-    marginBottom: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 28,
   },
   title: {
-    fontFamily: 'CormorantGaramond',
-    color: '#C9AB85',
-    letterSpacing: 14,
-    marginBottom: 16,
+    fontFamily: 'CormorantGaramond_Reg',
+    letterSpacing: 10,
+    color: '#F0ECE4',
     textAlign: 'center',
   },
   divider: {
     width: 32,
     height: 1,
-    backgroundColor: 'rgba(201,171,133,0.4)',
-    marginBottom: 16,
+    backgroundColor: 'rgba(201, 171, 133, 0.4)',
+    marginVertical: 18,
   },
   tagline: {
     fontFamily: 'CormorantGaramond_Italic',
-    color: 'rgba(201,171,133,0.75)',
-    letterSpacing: 1,
+    fontStyle: 'italic',
+    color: '#C9AB85',
+    letterSpacing: 1.5,
     textAlign: 'center',
     marginBottom: 48,
+    opacity: 0.85,
   },
   buttonWrap: {
     width: '100%',
-    alignItems: 'center',
+    maxWidth: 280,
   },
   button: {
-    borderWidth: 0.8,
-    borderColor: 'rgba(201,171,133,0.5)',
-    paddingVertical: 14,
-    paddingHorizontal: 36,
+    borderWidth: 1,
+    borderColor: '#C9AB85',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'transparent',
   },
   buttonText: {
-    fontSize: 10,
-    letterSpacing: 3.5,
-    color: '#C9AB85',
     fontFamily: 'Raleway',
+    fontSize: 11,
+    letterSpacing: 4,
+    color: '#C9AB85',
+    textAlign: 'center',
   },
 });
