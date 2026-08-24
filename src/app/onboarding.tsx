@@ -2,11 +2,11 @@ import { useState } from 'react';
 import {
   View, Text, TouchableOpacity,
   StyleSheet, ScrollView, SafeAreaView,
-  TextInput,
+  TextInput, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import ContextChip from '@/components/ContextChip';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/lib/supabase';
 
 const STYLE_OPTIONS   = ['Casual', 'Chic', 'Streetwear', 'Minimalist', 'Ethnic', 'Bohemian', 'Romantic', 'Formal'];
 const COMFORT_OPTIONS = ['Modest', 'Balanced', 'Expressive'];
@@ -23,22 +23,63 @@ export default function Onboarding() {
   const [comfort,    setComfort]   = useState('');
   const [body,       setBody]      = useState<string[]>([]);
   const [culture,    setCulture]   = useState('');
+  const [saving,     setSaving]    = useState(false);
 
   const toggleArray = (arr: string[], val: string, set: (a: string[]) => void) => {
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]);
   };
 
   const saveAndContinue = async () => {
-    const profile = {
-      user_id:              'demo-user-001',
-      display_name:         name || 'Allura User',
-      style_preferences:    { styles: styles_ },
-      comfort_preferences:  { level: comfort },
-      body_preferences:     { silhouette, preferences: body },
-      cultural_preferences: { style: culture },
-    };
-    await AsyncStorage.setItem('allura_profile', JSON.stringify(profile));
-    router.replace('/home');
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert('Error', 'Please log in first');
+        router.replace('/auth');
+        return;
+      }
+
+      // Prepare profile data matching your schema
+      const profileData = {
+        id: user.id,
+        user_id: user.id,
+        display_name: name || user.email?.split('@')[0] || 'Allura User',
+        style_preferences: {
+          styles: styles_,
+          silhouette: silhouette,
+        },
+        comfort_preferences: {
+          level: comfort,
+        },
+        body_preferences: {
+          preferences: body,
+          silhouette: silhouette,
+        },
+        cultural_preferences: {
+          style: culture,
+        },
+        updated_at: new Date().toISOString(),
+      };
+
+      // Upsert to profiles table
+      const { error } = await supabase
+        .from('profiles')
+        .upsert(profileData);
+
+      if (error) throw error;
+
+      // Update user metadata with display name
+      await supabase.auth.updateUser({
+        data: { display_name: profileData.display_name }
+      });
+
+      router.replace('/home');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to save profile');
+      console.error('Onboarding error:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -205,10 +246,11 @@ export default function Onboarding() {
           <TouchableOpacity
             style={[styles.nextBtn, step === 1 && { flex: 1 }]}
             onPress={() => step < 4 ? setStep(s => s + 1) : saveAndContinue()}
+            disabled={saving}
             activeOpacity={0.8}
           >
             <Text style={styles.nextText}>
-              {step < 4 ? 'Next →' : 'Start styling ✦'}
+              {saving ? 'Saving...' : step < 4 ? 'Next →' : 'Start styling ✦'}
             </Text>
           </TouchableOpacity>
         </View>

@@ -3,6 +3,7 @@ import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   useFonts,
   DancingScript_400Regular,
@@ -59,7 +60,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <>
+    <SafeAreaProvider>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
@@ -79,7 +80,7 @@ export default function RootLayout() {
         <Stack.Screen name="saved" />
         <Stack.Screen name="profile" />
       </Stack>
-    </>
+    </SafeAreaProvider>
   );
 }
 

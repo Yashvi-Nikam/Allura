@@ -15,6 +15,7 @@ export default function Signup() {
   const [confirm,  setConfirm]  = useState('');
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState('');
+  const [sent,     setSent]     = useState(false);
 
   const handleSignup = async () => {
     if (!email || !password || !name) {
@@ -35,17 +36,59 @@ export default function Signup() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { display_name: name } },
+        options: {
+          data: { display_name: name },
+          emailRedirectTo: 'allura://auth/confirm',
+        },
       });
       if (error) throw error;
-      // Go to onboarding after signup
-      router.replace('/onboarding');
+
+      if (data.session) {
+        // Email confirmation is off — go straight in
+        router.replace('/onboarding');
+      } else {
+        // Email confirmation required — show message
+        setSent(true);
+      }
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
   };
+
+  // Show confirmation sent screen
+  if (sent) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.sentWrap}>
+          <Text style={styles.sentOrnament}>✦</Text>
+          <Text style={styles.sentTitle}>Check your email</Text>
+          <Text style={styles.sentBody}>
+            We sent a confirmation link to{'\n'}
+            <Text style={styles.sentEmail}>{email}</Text>
+            {'\n\n'}
+            Click the link in the email to activate your account, then come back and sign in.
+          </Text>
+          <TouchableOpacity
+            style={styles.sentBtn}
+            onPress={() => router.replace('/auth' as any)}
+          >
+            <Text style={styles.sentBtnText}>Go to sign in ✦</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.resendBtn}
+            onPress={async () => {
+              await supabase.auth.resend({ type: 'signup', email });
+              setError('');
+            }}
+          >
+            <Text style={styles.resendText}>Resend email</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -154,84 +197,88 @@ export default function Signup() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#13111A' },
   scroll: { flexGrow: 1, padding: 32 },
+  // Sent confirmation screen
+  sentWrap: {
+    flex: 1, padding: 32,
+    alignItems: 'center', justifyContent: 'center', gap: 16,
+  },
+  sentOrnament: {
+    fontSize: 40, color: '#C9AB85', marginBottom: 8,
+  },
+  sentTitle: {
+    fontFamily: 'CormorantGaramond',
+    fontSize: 36, color: '#F0ECE4', textAlign: 'center',
+  },
+  sentBody: {
+    fontFamily: 'Jost',
+    fontSize: 14, color: '#C8C0B4',
+    textAlign: 'center', lineHeight: 22,
+  },
+  sentEmail: {
+    fontFamily: 'Jost_Regular',
+    color: '#C9AB85',
+  },
+  sentBtn: {
+    backgroundColor: '#C9AB85',
+    paddingVertical: 14, paddingHorizontal: 32,
+    borderRadius: 2, marginTop: 8,
+  },
+  sentBtnText: {
+    fontFamily: 'Raleway', fontSize: 11,
+    letterSpacing: 3, textTransform: 'uppercase', color: '#13111A',
+  },
+  resendBtn: { padding: 12 },
+  resendText: {
+    fontFamily: 'Raleway', fontSize: 10,
+    letterSpacing: 1, color: '#5A5650',
+    textTransform: 'uppercase',
+  },
+  // Form
   backBtn: { marginBottom: 24, alignSelf: 'flex-start' },
   backText: {
-    fontFamily: 'Raleway',
-    fontSize: 11,
-    letterSpacing: 1,
-    color: '#9B7FA6',
-    textTransform: 'uppercase',
+    fontFamily: 'Raleway', fontSize: 11,
+    letterSpacing: 1, color: '#9B7FA6', textTransform: 'uppercase',
   },
   logoWrap: { alignItems: 'center', marginBottom: 40 },
   logo: {
-    fontFamily: 'DancingScript',
-    fontSize: 46,
-    color: '#C9AB85',
-    marginBottom: 8,
+    fontFamily: 'DancingScript', fontSize: 46,
+    color: '#C9AB85', marginBottom: 8,
   },
   tagline: {
-    fontFamily: 'CormorantGaramond_Italic',
-    fontStyle: 'italic',
-    fontSize: 17,
-    color: 'rgba(201,171,133,0.7)',
+    fontFamily: 'CormorantGaramond_Italic', fontStyle: 'italic',
+    fontSize: 17, color: 'rgba(201,171,133,0.7)',
   },
   errorBox: {
     backgroundColor: 'rgba(240,153,123,0.1)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(240,153,123,0.3)',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderWidth: 0.5, borderColor: 'rgba(240,153,123,0.3)',
+    borderRadius: 8, padding: 12, marginBottom: 16,
   },
   errorText: {
-    fontFamily: 'Jost',
-    fontSize: 13,
-    color: '#F0997B',
-    textAlign: 'center',
+    fontFamily: 'Jost', fontSize: 13,
+    color: '#F0997B', textAlign: 'center',
   },
   form: { marginBottom: 24 },
   label: {
-    fontFamily: 'Raleway',
-    fontSize: 9,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: '#9B7FA6',
-    marginBottom: 8,
-    marginTop: 16,
+    fontFamily: 'Raleway', fontSize: 9,
+    letterSpacing: 2, textTransform: 'uppercase',
+    color: '#9B7FA6', marginBottom: 8, marginTop: 16,
   },
   input: {
     backgroundColor: '#1E1A2E',
-    borderWidth: 0.5,
-    borderColor: 'rgba(201,171,133,0.2)',
-    borderRadius: 8,
-    padding: 16,
-    fontFamily: 'Jost_Regular',
-    fontSize: 15,
-    color: '#F0ECE4',
+    borderWidth: 0.5, borderColor: 'rgba(201,171,133,0.2)',
+    borderRadius: 8, padding: 16,
+    fontFamily: 'Jost_Regular', fontSize: 15, color: '#F0ECE4',
   },
   submitBtn: {
-    backgroundColor: '#C9AB85',
-    padding: 18,
-    alignItems: 'center',
-    borderRadius: 2,
-    marginTop: 24,
+    backgroundColor: '#C9AB85', padding: 18,
+    alignItems: 'center', borderRadius: 2, marginTop: 24,
   },
   submitDisabled: { opacity: 0.5 },
   submitText: {
-    fontFamily: 'Raleway',
-    fontSize: 11,
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-    color: '#13111A',
+    fontFamily: 'Raleway', fontSize: 11,
+    letterSpacing: 3, textTransform: 'uppercase', color: '#13111A',
   },
   switchBtn: { alignItems: 'center', padding: 8 },
-  switchText: {
-    fontFamily: 'Jost',
-    fontSize: 14,
-    color: '#5A5650',
-  },
-  switchTextAccent: {
-    color: '#C9AB85',
-    fontFamily: 'Jost_Regular',
-  },
+  switchText: { fontFamily: 'Jost', fontSize: 14, color: '#5A5650' },
+  switchTextAccent: { color: '#C9AB85', fontFamily: 'Jost_Regular' },
 });

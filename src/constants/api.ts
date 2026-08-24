@@ -1,9 +1,9 @@
 import { Platform } from 'react-native';
 
 export const API_URL = Platform.select({
-  android: 'http://192.168.1.7:5000',
-  ios:     'http://192.168.1.7:5000',
-  default: 'http://192.168.1.7:5000',
+  android: 'http://10.193.245.9:5000',
+  ios:     'http://10.193.245.9:5000',
+  default: 'http://10.193.245.9:5000',
 });
 
 export const api = {

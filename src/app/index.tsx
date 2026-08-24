@@ -195,7 +195,7 @@ export default function SplashScreen() {
       ]}>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push('/onboarding')}
+          onPress={() => router.push('/auth' as any)}
           activeOpacity={0.75}
         >
           <Text allowFontScaling={false} style={styles.buttonText}>
