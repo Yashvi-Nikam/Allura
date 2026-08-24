@@ -1,7 +1,8 @@
 import {
   View, Text, ScrollView,
-  StyleSheet, SafeAreaView, TouchableOpacity,
+  StyleSheet,  TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 import { useRouter } from 'expo-router';
 
 export default function About() {
@@ -47,7 +48,7 @@ export default function About() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>The future of Allura</Text>
           <Text style={styles.sectionBody}>
-            We're just getting started. Coming soon: AR virtual try-on, shopping integration, community style sharing, and a full 3D wardrobe visualization. Allura will grow with you.
+            We're just getting started. Coming soon: Image Generation, AR virtual try-on, shopping integration, community style sharing, and a full 3D wardrobe visualization. Allura will grow with you.
           </Text>
         </View>
 

@@ -5,12 +5,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   TextInput,
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 import ContextChip from '@/components/ContextChip';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import LoadingState from '@/components/LoadingState';

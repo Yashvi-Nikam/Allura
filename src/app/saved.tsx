@@ -1,14 +1,56 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity,
-  StyleSheet, FlatList, SafeAreaView,
+  StyleSheet, FlatList
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import OutfitCard from '@/components/OutfitCard';
-
+import { supabase } from '@/lib/supabase';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 export default function Saved() {
   const router = useRouter();
   const [tab, setTab] = useState<'all' | 'favorites' | 'upcoming'>('all');
+  const [outfits, setOutfits] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSavedOutfits();
+  }, []);
+
+  const fetchSavedOutfits = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('outfits')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('saved', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Format the data so it works with OutfitCard
+      const formattedOutfits = (data || []).map((outfit: any) => ({
+        id: outfit.id,
+        title: outfit.title || 'Saved Look',
+        priority: outfit.priority || 'best_match',
+        item_names: outfit.item_names || [],
+        color_story: outfit.color_story || 'A look based on your preferences.',
+        why_this_works: outfit.rationale || '',
+        comfort_note: outfit.comfort_note || 'Comfort prioritized.',
+        style_tags: outfit.style_tags || ['personalized'],
+        visual_url: outfit.visual_url || null,
+      }));
+
+      setOutfits(formattedOutfits);
+    } catch (error) {
+      console.error('Error fetching saved outfits:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -35,20 +77,30 @@ export default function Saved() {
         ))}
       </View>
 
-      {/* Empty state */}
-      <View style={styles.empty}>
-        <Text style={styles.emptyOrnament}>♡</Text>
-        <Text style={styles.emptyTitle}>No saved outfits yet</Text>
-        <Text style={styles.emptyText}>
-          Plan an outfit and save the looks you love.
-        </Text>
-        <TouchableOpacity
-          style={styles.emptyBtn}
-          onPress={() => router.push('/context')}
-        >
-          <Text style={styles.emptyBtnText}>Plan an outfit ✦</Text>
-        </TouchableOpacity>
-      </View>
+      {/* The List */}
+      <FlatList
+        data={outfits}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) => <OutfitCard outfit={item} />}
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.empty}>
+              <Text style={styles.emptyOrnament}>♡</Text>
+              <Text style={styles.emptyTitle}>No saved outfits yet</Text>
+              <Text style={styles.emptyText}>
+                Plan an outfit and save the looks you love.
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyBtn}
+                onPress={() => router.push('/context')}
+              >
+                <Text style={styles.emptyBtnText}>Plan an outfit ✦</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null
+        }
+      />
 
       {/* Bottom nav */}
       <View style={styles.bottomNav}>
@@ -109,6 +161,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   tabTextActive: { color: '#C9AB85' },
+  listContent: { padding: 24, paddingTop: 0, paddingBottom: 100 },
   empty: {
     flex: 1,
     alignItems: 'center',

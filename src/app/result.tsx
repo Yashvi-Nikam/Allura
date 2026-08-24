@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import {
   View, Text, TouchableOpacity,
-  StyleSheet, ScrollView, SafeAreaView,
+  StyleSheet, ScrollView
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import OutfitCard from '@/components/OutfitCard';
 import { useRecommendations } from '@/hooks/useRecommendations';
@@ -19,7 +20,17 @@ export default function Results() {
 
   const handleSave = async () => {
     if (!outfit?.id) return;
-    await saveOutfit(outfit.id);
+    
+    // Send FULL details to backend so it can be saved
+    await saveOutfit(outfit.id, {
+      title: outfit.title,
+      item_names: outfit.item_names,
+      color_story: outfit.color_story,
+      why_this_works: outfit.why_this_works,
+      comfort_note: outfit.comfort_note,
+      style_tags: outfit.style_tags,
+    });
+    
     setSaved(prev => [...prev, outfit.id]);
   };
 

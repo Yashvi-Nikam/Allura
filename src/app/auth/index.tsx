@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, SafeAreaView, KeyboardAvoidingView,
+  StyleSheet, KeyboardAvoidingView,
   Platform, ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 
 export default function Login() {
   const router = useRouter();

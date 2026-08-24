@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 
 interface Outfit {
   id: string;
@@ -9,6 +9,7 @@ interface Outfit {
   why_this_works: string;
   comfort_note: string;
   style_tags: string[];
+  visual_url?: string | null; // Updated to allow null
 }
 
 export default function OutfitCard({ outfit }: { outfit: Outfit }) {
@@ -26,6 +27,16 @@ export default function OutfitCard({ outfit }: { outfit: Outfit }) {
 
   return (
     <View style={styles.card}>
+      {/* IMAGE PLACEHOLDER */}
+      {outfit.visual_url ? (
+        <Image source={{ uri: outfit.visual_url }} style={styles.outfitImage} />
+      ) : (
+        <View style={styles.imagePlaceholder}>
+          <Text style={styles.placeholderIcon}>✦</Text>
+          <Text style={styles.placeholderText}>Allura Outfit</Text>
+        </View>
+      )}
+
       <Text style={[styles.priority, { color: priorityColor }]}>
         {priorityLabel}
       </Text>
@@ -71,6 +82,36 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: 'rgba(201,171,133,0.15)',
     marginBottom: 16,
+  },
+  // NEW IMAGE STYLES
+  outfitImage: {
+    width: '100%',
+    height: 250,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    backgroundColor: 'rgba(201,171,133,0.08)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(201,171,133,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  placeholderIcon: {
+    fontSize: 40,
+    color: '#C9AB85',
+    marginBottom: 8,
+  },
+  placeholderText: {
+    fontFamily: 'Raleway',
+    fontSize: 12,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: '#C9AB85',
   },
   priority: {
     fontFamily: 'Raleway',

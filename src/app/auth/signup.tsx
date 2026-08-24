@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, SafeAreaView, KeyboardAvoidingView,
+  StyleSheet, KeyboardAvoidingView,
   Platform, ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 

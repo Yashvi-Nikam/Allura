@@ -1,7 +1,8 @@
 import {
   View, Text, ScrollView,
-  StyleSheet, SafeAreaView, TouchableOpacity,
+  StyleSheet, TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 import { useRouter } from 'expo-router';
 
 const SECTIONS = [

@@ -108,13 +108,18 @@ export const useRecommendations = () => {
     }
   };
 
+  // ✅ CORRECTED VERSION: Only sends why_this_works to match the backend!
   const saveOutfit = async (
-    outfit_id: string
+    outfit_id: string,
+    outfitData: Partial<Outfit> = {}
   ) => {
     try {
       await axios.patch(
         `${api.recommendations}/${outfit_id}/save`,
-        {}
+        { 
+          // Only send what the database supports
+          why_this_works: outfitData.why_this_works 
+        }
       );
     } catch (err: any) {
       console.error(

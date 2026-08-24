@@ -1,7 +1,8 @@
 import {
   View, Text, TouchableOpacity,
-  StyleSheet, ScrollView, SafeAreaView,
+  StyleSheet, ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import WhyThisWorks from '@/components/WhyThisWorks';
 

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import {
   View, Text, TouchableOpacity,
-  StyleSheet, ScrollView, SafeAreaView,
+  StyleSheet, ScrollView, 
   TextInput, Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 import { useRouter } from 'expo-router';
 import ContextChip from '@/components/ContextChip';
 import { supabase } from '@/lib/supabase';
@@ -39,9 +40,8 @@ export default function Onboarding() {
         return;
       }
 
-      // Prepare profile data matching your schema
+      // Prepare profile data matching your schema (FIXED: Removed 'id: user.id')
       const profileData = {
-        id: user.id,
         user_id: user.id,
         display_name: name || user.email?.split('@')[0] || 'Allura User',
         style_preferences: {
@@ -61,10 +61,10 @@ export default function Onboarding() {
         updated_at: new Date().toISOString(),
       };
 
-      // Upsert to profiles table
+      // Upsert to profiles table (FIXED: Added onConflict user_id so it doesn't duplicate)
       const { error } = await supabase
         .from('profiles')
-        .upsert(profileData);
+        .upsert(profileData, { onConflict: 'user_id' });
 
       if (error) throw error;
 

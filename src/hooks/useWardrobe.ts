@@ -50,16 +50,19 @@ export const useWardrobe = () => {
 
   /**
    * Fetch the current user's wardrobe.
+   * ✅ FIXED: Accepts an optional `userId` to match `insights.tsx`,
+   * but will still auto-fetch if no ID is passed.
    */
-  const fetchWardrobe = async () => {
+  const fetchWardrobe = async (userId?: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const userId = await getCurrentUserId();
+      // Use the passed ID, or auto-grab it from Supabase
+      const finalUserId = userId || (await getCurrentUserId());
 
       const res = await axios.get(
-        `${api.wardrobe}/${userId}`
+        `${api.wardrobe}/${finalUserId}`
       );
 
       setItems(res.data.items || []);

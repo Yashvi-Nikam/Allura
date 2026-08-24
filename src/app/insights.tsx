@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet,
-  SafeAreaView, ScrollView, TouchableOpacity,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useWardrobe } from '@/hooks/useWardrobe';
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 import { supabase } from '@/lib/supabase';
 
 export default function Insights() {

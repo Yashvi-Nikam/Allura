@@ -1,9 +1,9 @@
 import {
   View, Text, ScrollView,
-  StyleSheet, SafeAreaView, TouchableOpacity,
+  StyleSheet,TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 const FAQS = [
   {
     q: 'How does Allura generate outfit suggestions?',
@@ -65,7 +65,7 @@ export default function Help() {
           <Text style={styles.contactBody}>
             Reach out to us directly — we read every message.
           </Text>
-          <Text style={styles.contactEmail}>support@allura.app</Text>
+          <Text style={styles.contactEmail}>yashvinikam870@gmail.com</Text>
         </View>
 
       </ScrollView>

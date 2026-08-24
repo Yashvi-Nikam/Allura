@@ -5,10 +5,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  SafeAreaView,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
 import WardrobeItem from '@/components/WardrobeItem';
 import { useWardrobe } from '@/hooks/useWardrobe';
 import LoadingState from '@/components/LoadingState';
