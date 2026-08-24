@@ -1,40 +1,119 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, TouchableOpacity,
-  StyleSheet, FlatList, SafeAreaView,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  SafeAreaView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+
 import WardrobeItem from '@/components/WardrobeItem';
 import { useWardrobe } from '@/hooks/useWardrobe';
 import LoadingState from '@/components/LoadingState';
 
-const FILTERS = ['All', 'Tops', 'Bottoms', 'Dresses', 'Shoes', 'Bags', 'Accessories'];
+const FILTERS = [
+  'All',
+  'Tops',
+  'Bottoms',
+  'Dresses',
+  'Shoes',
+  'Bags',
+  'Accessories',
+];
 
 export default function Wardrobe() {
   const router = useRouter();
-  const { items, loading, fetchWardrobe } = useWardrobe();
+
+  const {
+    items,
+    loading,
+    fetchWardrobe,
+  } = useWardrobe();
+
   const [filter, setFilter] = useState('All');
 
-  useEffect(() => {
-    fetchWardrobe('demo-user-001');
-  }, []);
-
-  const filtered = filter === 'All' ? items : items.filter(i =>
-    i.category.toLowerCase().includes(filter.toLowerCase().slice(0, -1))
+  /**
+   * Refresh whenever the wardrobe screen
+   * becomes active again.
+   *
+   * This means:
+   *
+   * Add item
+   * ↓
+   * go back
+   * ↓
+   * wardrobe automatically refreshes
+   */
+  useFocusEffect(
+    useCallback(() => {
+      fetchWardrobe();
+    }, [])
   );
 
-  if (loading) return <LoadingState message="Loading your wardrobe..." />;
+  const filtered =
+    filter === 'All'
+      ? items
+      : items.filter(item => {
+          const category =
+            item.category?.toLowerCase() || '';
+
+          const normalizedFilter =
+            filter.toLowerCase();
+
+          const aliases: Record<string, string[]> = {
+            tops: ['top'],
+            bottoms: ['bottom'],
+            dresses: ['dress'],
+            shoes: ['shoe', 'footwear'],
+            bags: ['bag'],
+            accessories: [
+              'accessory',
+              'accessories',
+            ],
+          };
+
+          const possibleCategories =
+            aliases[normalizedFilter] || [
+              normalizedFilter,
+            ];
+
+          return possibleCategories.some(
+            value =>
+              category === value ||
+              category.includes(value)
+          );
+        });
+
+  if (loading && items.length === 0) {
+    return (
+      <LoadingState message="Loading your wardrobe..." />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+        >
           <Text style={styles.back}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>My Wardrobe</Text>
-        <TouchableOpacity onPress={() => router.push('/wardrobe-add')}>
-          <Text style={styles.addBtn}>+ Add</Text>
+
+        <Text style={styles.title}>
+          My Wardrobe
+        </Text>
+
+        <TouchableOpacity
+          onPress={() =>
+            router.push('/wardrobe-add')
+          }
+        >
+          <Text style={styles.addBtn}>
+            + Add
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -43,14 +122,24 @@ export default function Wardrobe() {
         data={FILTERS}
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={i => i}
+        keyExtractor={item => item}
         contentContainerStyle={styles.filterRow}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[styles.filterChip, filter === item && styles.filterChipActive]}
+            style={[
+              styles.filterChip,
+              filter === item &&
+                styles.filterChipActive,
+            ]}
             onPress={() => setFilter(item)}
           >
-            <Text style={[styles.filterText, filter === item && styles.filterTextActive]}>
+            <Text
+              style={[
+                styles.filterText,
+                filter === item &&
+                  styles.filterTextActive,
+              ]}
+            >
               {item}
             </Text>
           </TouchableOpacity>
@@ -60,23 +149,36 @@ export default function Wardrobe() {
       {/* Wardrobe grid */}
       {filtered.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>No items yet.{'\n'}Add your first piece!</Text>
+          <Text style={styles.emptyText}>
+            {items.length === 0
+              ? 'No items yet.\nAdd your first piece!'
+              : 'No items in this category.'}
+          </Text>
+
           <TouchableOpacity
             style={styles.emptyBtn}
-            onPress={() => router.push('/wardrobe-add')}
+            onPress={() =>
+              router.push('/wardrobe-add')
+            }
           >
-            <Text style={styles.emptyBtnText}>Add item ✦</Text>
+            <Text style={styles.emptyBtnText}>
+              Add item ✦
+            </Text>
           </TouchableOpacity>
         </View>
       ) : (
         <FlatList
           data={filtered}
           numColumns={2}
-          keyExtractor={i => i.id}
+          keyExtractor={item => item.id}
           contentContainerStyle={styles.grid}
           columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <WardrobeItem item={item} onPress={() => {}} />
+            <WardrobeItem
+              item={item}
+              onPress={() => {}}
+            />
           )}
         />
       )}
@@ -84,16 +186,24 @@ export default function Wardrobe() {
       {/* Add button */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => router.push('/wardrobe-add')}
+        onPress={() =>
+          router.push('/wardrobe-add')
+        }
       >
-        <Text style={styles.fabText}>+ Add item</Text>
+        <Text style={styles.fabText}>
+          + Add item
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#13111A' },
+  container: {
+    flex: 1,
+    backgroundColor: '#13111A',
+  },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -101,49 +211,75 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingBottom: 16,
   },
-  back: { fontSize: 22, color: '#C9AB85' },
+
+  back: {
+    fontSize: 22,
+    color: '#C9AB85',
+  },
+
   title: {
     fontFamily: 'CormorantGaramond_Reg',
     fontSize: 22,
     color: '#F0ECE4',
   },
+
   addBtn: {
     fontFamily: 'Raleway',
     fontSize: 12,
     letterSpacing: 1,
     color: '#C9AB85',
   },
+
   filterRow: {
     paddingHorizontal: 24,
     paddingBottom: 16,
     gap: 8,
   },
+
   filterChip: {
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 20,
     borderWidth: 0.5,
-    borderColor: 'rgba(201,171,133,0.2)',
+    borderColor:
+      'rgba(201,171,133,0.2)',
     marginRight: 8,
   },
+
   filterChipActive: {
-    backgroundColor: 'rgba(201,171,133,0.15)',
+    backgroundColor:
+      'rgba(201,171,133,0.15)',
     borderColor: '#C9AB85',
   },
+
   filterText: {
     fontFamily: 'Jost',
     fontSize: 12,
     color: '#5A5650',
   },
-  filterTextActive: { color: '#C9AB85' },
-  grid: { padding: 24, paddingTop: 0 },
-  row: { justifyContent: 'space-between' },
+
+  filterTextActive: {
+    color: '#C9AB85',
+  },
+
+  grid: {
+    padding: 24,
+    paddingTop: 0,
+    paddingBottom: 100,
+  },
+
+  row: {
+    justifyContent: 'space-between',
+  },
+
   empty: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
+    paddingBottom: 60,
   },
+
   emptyText: {
     fontFamily: 'Jost',
     fontSize: 14,
@@ -151,13 +287,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
+
   emptyBtn: {
     borderWidth: 0.5,
-    borderColor: 'rgba(201,171,133,0.3)',
+    borderColor:
+      'rgba(201,171,133,0.3)',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 2,
   },
+
   emptyBtnText: {
     fontFamily: 'Raleway',
     fontSize: 10,
@@ -165,6 +304,7 @@ const styles = StyleSheet.create({
     color: '#C9AB85',
     textTransform: 'uppercase',
   },
+
   fab: {
     position: 'absolute',
     bottom: 24,
@@ -174,6 +314,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 2,
   },
+
   fabText: {
     fontFamily: 'Raleway',
     fontSize: 10,
