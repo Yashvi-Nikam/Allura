@@ -1,4 +1,4 @@
-export const API_URL = 'http://10.193.245.122:5000';
+export const API_URL = 'http://192.168.1.7:5000';
 
 export const api = {
   profile: `${API_URL}/api/profile`,
