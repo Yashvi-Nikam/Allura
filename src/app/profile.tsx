@@ -7,7 +7,7 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme } from '@/context/ThemeContext';
 
 const MENU_ITEMS = [
   { label: 'Edit Profile',    icon: '✦', route: '/edit-profile' },
