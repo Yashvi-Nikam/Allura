@@ -13,7 +13,7 @@ const SECTIONS = [
   { title: 'AI recommendations', body: `Outfit suggestions are generated using your profile, wardrobe, and context. All AI processing happens on secure servers. Allura does not store your conversations with the AI.` },
   { title: 'Your rights', body: `You have the right to access, correct, or delete your data at any time. To delete your account and all associated data, go to Profile → Settings → Delete Account. We will process your request within 30 days.` },
   { title: 'Data security', body: `All data is encrypted in transit (TLS) and at rest. We use row-level security so your data is never accessible to other users. We follow industry-standard security practices.` },
-  { title: 'Contact', body: `Questions about your privacy? Reach us at privacy@allura.app — we'll respond within 48 hours.` },
+  { title: 'Contact', body: `Questions about your privacy? Reach us at allura.ai.info@gmail.com — we'll respond within 48 hours.` },
 ];
 
 export default function Privacy() {

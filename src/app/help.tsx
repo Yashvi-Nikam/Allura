@@ -44,7 +44,7 @@ export default function Help() {
         <View style={[styles.contactCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
           <Text style={[styles.contactTitle, { color: colors.text }]}>Still need help?</Text>
           <Text style={[styles.contactBody, { color: colors.textMuted }]}>Reach out to us directly — we read every message.</Text>
-          <Text style={[styles.contactEmail, { color: colors.gold }]}>yashvinikam870@gmail.com</Text>
+          <Text style={[styles.contactEmail, { color: colors.gold }]}>allura.ai.info@gmail.com</Text>
         </View>
 
       </ScrollView>
