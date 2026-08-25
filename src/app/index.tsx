@@ -23,16 +23,21 @@ const Ornament = ({ size = 120 }: { size?: number }) => (
     </Defs>
 
     <Circle cx="100" cy="100" r="75" fill="url(#petalGlow)" />
+
     <Circle cx="100" cy="100" r="85" stroke="#C9AB85" strokeWidth="0.8" opacity={0.5} />
     <Circle cx="100" cy="100" r="70" stroke="#C9AB85" strokeWidth="0.6" opacity={0.35} />
+
     <Line x1="100" y1="30" x2="100" y2="170" stroke="#C9AB85" strokeWidth="0.5" opacity={0.3} />
     <Line x1="30" y1="100" x2="170" y2="100" stroke="#C9AB85" strokeWidth="0.5" opacity={0.3} />
+
     <Polygon points="100,88 112,100 100,112 88,100" stroke="#C9AB85" strokeWidth="1" fill="#13111A" />
     <Circle cx="100" cy="100" r="2.5" fill="#C9AB85" />
+
     <Path d="M 100,45 C 92,58 92,78 100,88 C 108,78 108,58 100,45 Z" fill="#13111A" stroke="#C9AB85" strokeWidth="0.8" />
     <Path d="M 100,155 C 92,142 92,122 100,112 C 108,122 108,142 100,155 Z" fill="#13111A" stroke="#C9AB85" strokeWidth="0.8" />
     <Path d="M 45,100 C 58,92 78,92 88,100 C 78,108 58,108 45,100 Z" fill="#13111A" stroke="#C9AB85" strokeWidth="0.8" />
     <Path d="M 155,100 C 142,92 122,92 112,100 C 122,108 142,108 155,100 Z" fill="#13111A" stroke="#C9AB85" strokeWidth="0.8" />
+
     <G transform="translate(108, 62) rotate(42)">
       <Path d="M 0,-24 C -8,-14 -8,-5 0,0 C 8,-5 8,-14 0,-24 Z" fill="#13111A" stroke="#C9AB85" strokeWidth="0.7" />
     </G>
@@ -87,24 +92,25 @@ export default function Index() {
     ]).start();
   }, []);
 
+  // ✅ UPDATED LOGIC: Uses `.maybeSingle()` to prevent crashing!
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session?.user) {
-        setChecking(false); // ✅ Show Splash / let button work
+        setChecking(false); // Show splash for new users
         return;
       }
 
-      // ✅ FIXED: Check if they have a profile before sending to Home
+      // Safe check
       const { data: profile } = await supabase
         .from('profiles')
-        .select('display_name, style_preferences')
+        .select('*')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
-      // If they DON'T have a profile yet, send them to ONBOARDING
-      if (!profile || !profile.display_name || !profile.style_preferences) {
+      // If no profile, go to onboarding. If profile exists, go to home!
+      if (!profile || !profile.display_name) {
         router.replace('/onboarding');
       } else {
         router.replace('/home');
