@@ -4,10 +4,11 @@ import {
   StyleSheet, ScrollView, 
   TextInput, Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import ContextChip from '@/components/ContextChip';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/context/ThemeContext';
 
 const STYLE_OPTIONS   = ['Casual', 'Chic', 'Streetwear', 'Minimalist', 'Ethnic', 'Bohemian', 'Romantic', 'Formal'];
 const COMFORT_OPTIONS = ['Modest', 'Balanced', 'Expressive'];
@@ -17,6 +18,7 @@ const SILHOUETTES     = ['Petite', 'Average', 'Tall', 'Plus'];
 
 export default function Onboarding() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [step,       setStep]      = useState(1);
   const [name,       setName]      = useState('');
   const [silhouette, setSilhouette] = useState('');
@@ -40,7 +42,6 @@ export default function Onboarding() {
         return;
       }
 
-      // Prepare profile data matching your schema (FIXED: Removed 'id: user.id')
       const profileData = {
         user_id: user.id,
         display_name: name || user.email?.split('@')[0] || 'Allura User',
@@ -61,14 +62,12 @@ export default function Onboarding() {
         updated_at: new Date().toISOString(),
       };
 
-      // Upsert to profiles table (FIXED: Added onConflict user_id so it doesn't duplicate)
       const { error } = await supabase
         .from('profiles')
         .upsert(profileData, { onConflict: 'user_id' });
 
       if (error) throw error;
 
-      // Update user metadata with display name
       await supabase.auth.updateUser({
         data: { display_name: profileData.display_name }
       });
@@ -83,57 +82,54 @@ export default function Onboarding() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.logo}>Allura</Text>
-          <Text style={styles.stepCount}>Step {step} of 4</Text>
+          <Text style={[styles.logo, { color: colors.gold }]}>Allura</Text>
+          <Text style={[styles.stepCount, { color: colors.textMuted }]}>Step {step} of 4</Text>
         </View>
 
-        {/* Progress bar */}
         <View style={styles.progressBg}>
           <View style={[styles.progressFill, { width: `${(step / 4) * 100}%` }]} />
         </View>
 
-        {/* ── STEP 1 ── */}
         {step === 1 && (
           <View style={styles.stepContent}>
-            <Text style={styles.heading}>Let's create your{'\n'}style persona ✦</Text>
-            <Text style={styles.sub}>
-              This helps Allura style outfits that feel like you.
-            </Text>
+            <Text style={[styles.heading, { color: colors.text }]}>Let's create your{'\n'}style persona ✦</Text>
+            <Text style={[styles.sub, { color: colors.textMuted }]}>This helps Allura style outfits that feel like you.</Text>
 
-            <Text style={styles.fieldLabel}>What's your name?</Text>
+            <Text style={[styles.fieldLabel, { color: colors.mauve }]}>What's your name?</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
               placeholder="Your name..."
-              placeholderTextColor="#5A5650"
+              placeholderTextColor={colors.textMuted}
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
               returnKeyType="done"
             />
 
-            <Text style={styles.fieldLabel}>Choose your body silhouette</Text>
+            <Text style={[styles.fieldLabel, { color: colors.mauve }]}>Choose your body silhouette</Text>
             <View style={styles.silouetteRow}>
               {SILHOUETTES.map(s => (
                 <TouchableOpacity
                   key={s}
                   style={[
                     styles.silouetteBtn,
-                    silhouette === s && styles.silouetteBtnActive,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                    silhouette === s && { backgroundColor: colors.goldDim, borderColor: colors.gold },
                   ]}
                   onPress={() => setSilhouette(s)}
                   activeOpacity={0.75}
                 >
                   <Text style={[
                     styles.silouetteText,
-                    silhouette === s && styles.silouetteTextActive,
+                    { color: colors.textSecondary },
+                    silhouette === s && { color: colors.gold },
                   ]}>
                     {s}
                   </Text>
@@ -143,11 +139,10 @@ export default function Onboarding() {
           </View>
         )}
 
-        {/* ── STEP 2 ── */}
         {step === 2 && (
           <View style={styles.stepContent}>
-            <Text style={styles.heading}>Your style ✦</Text>
-            <Text style={styles.sub}>Pick all that feel like you.</Text>
+            <Text style={[styles.heading, { color: colors.text }]}>Your style ✦</Text>
+            <Text style={[styles.sub, { color: colors.textMuted }]}>Pick all that feel like you.</Text>
             <View style={styles.chipsWrap}>
               {STYLE_OPTIONS.map(s => (
                 <ContextChip
@@ -160,13 +155,12 @@ export default function Onboarding() {
           </View>
         )}
 
-        {/* ── STEP 3 ── */}
         {step === 3 && (
           <View style={styles.stepContent}>
-            <Text style={styles.heading}>Comfort & coverage ✦</Text>
-            <Text style={styles.sub}>How do you like to dress?</Text>
+            <Text style={[styles.heading, { color: colors.text }]}>Comfort & coverage ✦</Text>
+            <Text style={[styles.sub, { color: colors.textMuted }]}>How do you like to dress?</Text>
 
-            <Text style={styles.fieldLabel}>Comfort level</Text>
+            <Text style={[styles.fieldLabel, { color: colors.mauve }]}>Comfort level</Text>
             <View style={styles.chipsWrap}>
               {COMFORT_OPTIONS.map(s => (
                 <ContextChip
@@ -177,12 +171,8 @@ export default function Onboarding() {
               ))}
             </View>
 
-            <Text style={[styles.fieldLabel, { marginTop: 24 }]}>
-              Body preferences
-            </Text>
-            <Text style={styles.fieldHint}>
-              These help Allura suggest styles that suit YOUR preferences.
-            </Text>
+            <Text style={[styles.fieldLabel, { color: colors.mauve, marginTop: 24 }]}>Body preferences</Text>
+            <Text style={[styles.fieldHint, { color: colors.textMuted }]}>These help Allura suggest styles that suit YOUR preferences.</Text>
             <View style={styles.chipsWrap}>
               {BODY_OPTIONS.map(s => (
                 <ContextChip
@@ -195,13 +185,10 @@ export default function Onboarding() {
           </View>
         )}
 
-        {/* ── STEP 4 ── */}
         {step === 4 && (
           <View style={styles.stepContent}>
-            <Text style={styles.heading}>Your cultural vibe ✦</Text>
-            <Text style={styles.sub}>
-              Allura respects your style world — Indian, Western, or anywhere in between.
-            </Text>
+            <Text style={[styles.heading, { color: colors.text }]}>Your cultural vibe ✦</Text>
+            <Text style={[styles.sub, { color: colors.textMuted }]}>Allura respects your style world — Indian, Western, or anywhere in between.</Text>
             <View style={styles.chipsWrap}>
               {CULTURE_OPTIONS.map(s => (
                 <ContextChip
@@ -212,44 +199,40 @@ export default function Onboarding() {
               ))}
             </View>
 
-            {/* Summary preview */}
             {name ? (
-              <View style={styles.summaryCard}>
-                <Text style={styles.summaryTitle}>Looking good, {name}! ✦</Text>
+              <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.summaryTitle, { color: colors.gold }]}>Looking good, {name}! ✦</Text>
                 {styles_.length > 0 && (
-                  <Text style={styles.summaryLine}>
-                    Style: {styles_.join(', ')}
-                  </Text>
+                  <Text style={[styles.summaryLine, { color: colors.textSecondary }]}>Style: {styles_.join(', ')}</Text>
                 )}
                 {comfort ? (
-                  <Text style={styles.summaryLine}>Comfort: {comfort}</Text>
+                  <Text style={[styles.summaryLine, { color: colors.textSecondary }]}>Comfort: {comfort}</Text>
                 ) : null}
                 {silhouette ? (
-                  <Text style={styles.summaryLine}>Silhouette: {silhouette}</Text>
+                  <Text style={[styles.summaryLine, { color: colors.textSecondary }]}>Silhouette: {silhouette}</Text>
                 ) : null}
               </View>
             ) : null}
           </View>
         )}
 
-        {/* ── Navigation buttons ── */}
         <View style={styles.navRow}>
           {step > 1 && (
             <TouchableOpacity
-              style={styles.backBtn}
+              style={[styles.backBtn, { borderColor: colors.border }]}
               onPress={() => setStep(s => s - 1)}
               activeOpacity={0.75}
             >
-              <Text style={styles.backText}>← Back</Text>
+              <Text style={[styles.backText, { color: colors.textMuted }]}>← Back</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.nextBtn, step === 1 && { flex: 1 }]}
+            style={[styles.nextBtn, { backgroundColor: colors.gold }]}
             onPress={() => step < 4 ? setStep(s => s + 1) : saveAndContinue()}
             disabled={saving}
             activeOpacity={0.8}
           >
-            <Text style={styles.nextText}>
+            <Text style={[styles.nextText, { color: colors.background }]}>
               {saving ? 'Saving...' : step < 4 ? 'Next →' : 'Start styling ✦'}
             </Text>
           </TouchableOpacity>
@@ -261,168 +244,29 @@ export default function Onboarding() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#13111A',
-  },
-  scroll: {
-    padding: 24,
-    paddingBottom: 48,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  logo: {
-    fontFamily: 'DancingScript',
-    fontSize: 28,
-    color: '#C9AB85',
-  },
-  stepCount: {
-    fontFamily: 'Raleway',
-    fontSize: 10,
-    letterSpacing: 2,
-    color: '#5A5650',
-    textTransform: 'uppercase',
-  },
-  progressBg: {
-    height: 1,
-    backgroundColor: 'rgba(201,171,133,0.1)',
-    marginBottom: 40,
-    borderRadius: 1,
-  },
-  progressFill: {
-    height: 1,
-    backgroundColor: '#C9AB85',
-    borderRadius: 1,
-  },
-  stepContent: {
-    marginBottom: 32,
-  },
-  heading: {
-    fontFamily: 'CormorantGaramond',
-    fontSize: 34,
-    color: '#F0ECE4',
-    lineHeight: 42,
-    marginBottom: 8,
-  },
-  sub: {
-    fontFamily: 'Jost',
-    fontSize: 14,
-    color: '#5A5650',
-    marginBottom: 32,
-    lineHeight: 22,
-  },
-  fieldLabel: {
-    fontFamily: 'Raleway',
-    fontSize: 9,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: '#9B7FA6',
-    marginBottom: 12,
-  },
-  fieldHint: {
-    fontFamily: 'Jost',
-    fontSize: 12,
-    color: '#5A5650',
-    marginBottom: 12,
-    lineHeight: 18,
-  },
-  input: {
-    backgroundColor: '#1E1A2E',
-    borderWidth: 0.5,
-    borderColor: 'rgba(201,171,133,0.25)',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 28,
-    fontFamily: 'Jost_Regular',
-    fontSize: 15,
-    color: '#F0ECE4',
-  },
-  chipsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  silouetteRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  silouetteBtn: {
-    borderWidth: 0.5,
-    borderColor: 'rgba(201,171,133,0.2)',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    backgroundColor: '#1E1A2E',
-  },
-  silouetteBtnActive: {
-    backgroundColor: 'rgba(201,171,133,0.15)',
-    borderColor: '#C9AB85',
-  },
-  silouetteText: {
-    fontFamily: 'Jost_Regular',
-    fontSize: 13,
-    color: '#C8C0B4',
-  },
-  silouetteTextActive: {
-    color: '#C9AB85',
-  },
-  summaryCard: {
-    marginTop: 32,
-    backgroundColor: '#1E1A2E',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 0.5,
-    borderColor: 'rgba(201,171,133,0.15)',
-    gap: 8,
-  },
-  summaryTitle: {
-    fontFamily: 'CormorantGaramond_Reg',
-    fontSize: 20,
-    color: '#C9AB85',
-    marginBottom: 4,
-  },
-  summaryLine: {
-    fontFamily: 'Jost',
-    fontSize: 13,
-    color: '#C8C0B4',
-    lineHeight: 20,
-    textTransform: 'capitalize',
-  },
-  navRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-    marginTop: 8,
-  },
-  backBtn: {
-    paddingVertical: 15,
-    paddingHorizontal: 24,
-    borderWidth: 0.5,
-    borderColor: 'rgba(201,171,133,0.2)',
-    borderRadius: 2,
-  },
-  backText: {
-    fontFamily: 'Raleway',
-    fontSize: 11,
-    letterSpacing: 1,
-    color: '#5A5650',
-    textTransform: 'uppercase',
-  },
-  nextBtn: {
-    paddingVertical: 15,
-    paddingHorizontal: 32,
-    backgroundColor: '#C9AB85',
-    borderRadius: 2,
-  },
-  nextText: {
-    fontFamily: 'Raleway',
-    fontSize: 11,
-    letterSpacing: 2,
-    color: '#13111A',
-    textTransform: 'uppercase',
-  },
+  container: { flex: 1 },
+  scroll: { padding: 24, paddingBottom: 48 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  logo: { fontFamily: 'DancingScript', fontSize: 28 },
+  stepCount: { fontFamily: 'Raleway', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase' },
+  progressBg: { height: 1, backgroundColor: 'rgba(201,171,133,0.1)', marginBottom: 40 },
+  progressFill: { height: 1, backgroundColor: '#C9AB85' },
+  stepContent: { marginBottom: 32 },
+  heading: { fontFamily: 'CormorantGaramond', fontSize: 34, lineHeight: 42, marginBottom: 8 },
+  sub: { fontFamily: 'Jost', fontSize: 14, marginBottom: 32, lineHeight: 22 },
+  fieldLabel: { fontFamily: 'Raleway', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 12 },
+  fieldHint: { fontFamily: 'Jost', fontSize: 12, marginBottom: 12, lineHeight: 18 },
+  input: { borderWidth: 0.5, borderRadius: 8, padding: 16, marginBottom: 28, fontFamily: 'Jost_Regular', fontSize: 15 },
+  chipsWrap: { flexDirection: 'row', flexWrap: 'wrap' },
+  silouetteRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  silouetteBtn: { borderWidth: 0.5, borderRadius: 8, paddingVertical: 12, paddingHorizontal: 20 },
+  silouetteText: { fontFamily: 'Jost_Regular', fontSize: 13 },
+  summaryCard: { marginTop: 32, borderRadius: 16, padding: 20, borderWidth: 0.5, gap: 8 },
+  summaryTitle: { fontFamily: 'CormorantGaramond_Reg', fontSize: 20, marginBottom: 4 },
+  summaryLine: { fontFamily: 'Jost', fontSize: 13, lineHeight: 20, textTransform: 'capitalize' },
+  navRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 8 },
+  backBtn: { paddingVertical: 15, paddingHorizontal: 24, borderWidth: 0.5, borderRadius: 2 },
+  backText: { fontFamily: 'Raleway', fontSize: 11, letterSpacing: 1, textTransform: 'uppercase' },
+  nextBtn: { paddingVertical: 15, paddingHorizontal: 32, borderRadius: 2 },
+  nextText: { fontFamily: 'Raleway', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' },
 });

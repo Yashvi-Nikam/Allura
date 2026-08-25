@@ -1,8 +1,9 @@
 import {
   View, Text, TouchableOpacity,
-  StyleSheet, ScrollView, StatusBar,
+  StyleSheet, ScrollView,
   Dimensions,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
@@ -17,12 +18,12 @@ export default function Home() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
+      {/* ✅ REMOVED backgroundColor from StatusBar */}
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: 80 + insets.bottom }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={[styles.greeting, { color: colors.mauve }]}>GOOD EVENING ✦</Text>
@@ -31,7 +32,6 @@ export default function Home() {
           <Text style={[styles.logo, { color: colors.gold }]}>Allura</Text>
         </View>
 
-        {/* Plan an Outfit — full width */}
         <TouchableOpacity
           style={[styles.mainCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.borderFocus }]}
           onPress={() => router.push('/context')}
@@ -42,7 +42,6 @@ export default function Home() {
           <Text style={[styles.mainCardSub, { color: colors.textMuted }]}>For a specific occasion</Text>
         </TouchableOpacity>
 
-        {/* Grid — 2 columns */}
         <View style={styles.grid}>
           {[
             { icon: '◈', title: 'Wardrobe',      sub: 'View & manage items',    route: '/wardrobe' },
@@ -63,7 +62,6 @@ export default function Home() {
           ))}
         </View>
 
-        {/* Upcoming plans */}
         <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>UPCOMING PLANS</Text>
         <View style={[styles.emptyPlans, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.emptyText, { color: colors.textMuted }]}>
@@ -79,7 +77,6 @@ export default function Home() {
 
       </ScrollView>
 
-      {/* Bottom nav */}
       <View style={[styles.bottomNav, {
         backgroundColor: colors.surface,
         borderTopColor: colors.border,

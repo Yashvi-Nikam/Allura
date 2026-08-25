@@ -6,11 +6,13 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/context/ThemeContext';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 export default function EditProfile() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [name, setName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -26,7 +28,7 @@ export default function EditProfile() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setName(user.user_metadata?.display_name || '');
-      
+
       if (user.user_metadata?.avatar_url) {
         setAvatarUrl(user.user_metadata.avatar_url);
       } else {
@@ -34,7 +36,7 @@ export default function EditProfile() {
         const { data: signedData } = await supabase.storage
           .from('avatars')
           .createSignedUrl(fileName, 60 * 60 * 24 * 365);
-          
+
         if (signedData?.signedUrl) {
           setAvatarUrl(signedData.signedUrl);
         }
@@ -118,14 +120,14 @@ export default function EditProfile() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.back}>←</Text>
+          <Text style={[styles.back, { color: colors.gold }]}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Edit Profile</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Edit Profile</Text>
         <TouchableOpacity onPress={handleSave} disabled={saving}>
-          <Text style={[styles.saveBtn, saving && { opacity: 0.5 }]}>
+          <Text style={[styles.saveBtn, { color: colors.gold }, saving && { opacity: 0.5 }]}>
             {saving ? 'Saving...' : 'Save'}
           </Text>
         </TouchableOpacity>
@@ -133,29 +135,29 @@ export default function EditProfile() {
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {saved ? (
-          <View style={styles.successBox}>
-            <Text style={styles.successText}>✦ Profile updated!</Text>
+          <View style={[styles.successBox, { borderColor: colors.goldDim }]}>
+            <Text style={[styles.successText, { color: colors.gold }]}>✦ Profile updated!</Text>
           </View>
         ) : null}
 
         {error ? (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>{error}</Text>
+          <View style={[styles.errorBox, { borderColor: colors.rose }]}>
+            <Text style={[styles.errorText, { color: colors.rose }]}>{error}</Text>
           </View>
         ) : null}
 
         <View style={styles.avatarSection}>
           <View style={styles.avatarWrapper}>
             {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+              <Image source={{ uri: avatarUrl }} style={[styles.avatarImage, { borderColor: colors.borderFocus }]} />
             ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarText}>✦</Text>
+              <View style={[styles.avatarPlaceholder, { backgroundColor: colors.surfaceElevated, borderColor: colors.borderFocus }]}>
+                <Text style={[styles.avatarText, { color: colors.gold }]}>✦</Text>
               </View>
             )}
 
-            <TouchableOpacity 
-              style={styles.cameraBtn} 
+            <TouchableOpacity
+              style={[styles.cameraBtn, { backgroundColor: colors.gold }]}
               onPress={pickAndUploadImage}
               disabled={uploading}
             >
@@ -168,23 +170,23 @@ export default function EditProfile() {
           </View>
 
           <TouchableOpacity onPress={pickAndUploadImage} disabled={uploading}>
-            <Text style={styles.avatarHint}>
+            <Text style={[styles.avatarHint, { color: colors.gold }]}>
               {uploading ? 'Uploading...' : 'Tap to change profile photo'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.label}>Display name</Text>
+        <Text style={[styles.label, { color: colors.mauve }]}>Display name</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
           placeholder="Your name"
-          placeholderTextColor="#5A5650"
+          placeholderTextColor={colors.textMuted}
           value={name}
           onChangeText={setName}
           autoCapitalize="words"
         />
 
-        <Text style={styles.hint}>
+        <Text style={[styles.hint, { color: colors.textMuted }]}>
           This is how Allura will address you throughout the app.
         </Text>
       </ScrollView>
@@ -193,88 +195,25 @@ export default function EditProfile() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#13111A' },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 24,
-  },
-  back: { fontSize: 22, color: '#C9AB85' },
-  title: {
-    fontFamily: 'CormorantGaramond_Reg',
-    fontSize: 20, color: '#F0ECE4',
-  },
-  saveBtn: {
-    fontFamily: 'Raleway', fontSize: 12,
-    letterSpacing: 1, color: '#C9AB85',
-  },
+  container: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24 },
+  back: { fontSize: 22 },
+  title: { fontFamily: 'CormorantGaramond_Reg', fontSize: 20 },
+  saveBtn: { fontFamily: 'Raleway', fontSize: 12, letterSpacing: 1 },
   scroll: { padding: 24 },
-  successBox: {
-    backgroundColor: 'rgba(159,225,203,0.08)',
-    borderWidth: 0.5, borderColor: 'rgba(159,225,203,0.2)',
-    borderRadius: 8, padding: 12, marginBottom: 16,
-  },
-  successText: {
-    fontFamily: 'CormorantGaramond_Italic', fontStyle: 'italic',
-    fontSize: 15, color: '#9fe1cb', textAlign: 'center',
-  },
-  errorBox: {
-    backgroundColor: 'rgba(240,153,123,0.1)',
-    borderWidth: 0.5, borderColor: 'rgba(240,153,123,0.3)',
-    borderRadius: 8, padding: 12, marginBottom: 16,
-  },
-  errorText: {
-    fontFamily: 'Jost', fontSize: 13,
-    color: '#F0997B', textAlign: 'center',
-  },
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: 36, gap: 12,
-  },
-  avatarWrapper: {
-    position: 'relative',
-  },
-  avatarImage: {
-    width: 90, height: 90, borderRadius: 45,
-    borderWidth: 0.5, borderColor: 'rgba(201,171,133,0.3)',
-  },
-  avatarPlaceholder: {
-    width: 90, height: 90, borderRadius: 45,
-    backgroundColor: '#2A2438',
-    borderWidth: 0.5, borderColor: 'rgba(201,171,133,0.3)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  avatarText: { fontSize: 30, color: '#C9AB85' },
-  cameraBtn: {
-    position: 'absolute',
-    bottom: 0, right: 0,
-    backgroundColor: '#C9AB85',
-    width: 28, height: 28,
-    borderRadius: 14,
-    borderWidth: 2, borderColor: '#13111A',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  cameraBtnText: {
-    color: '#13111A', fontSize: 18, fontWeight: 'bold', lineHeight: 20,
-  },
-  avatarHint: {
-    fontFamily: 'Jost', fontSize: 12, color: '#C9AB85',
-  },
-  label: {
-    fontFamily: 'Raleway', fontSize: 9,
-    letterSpacing: 2, textTransform: 'uppercase',
-    color: '#9B7FA6', marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#1E1A2E',
-    borderWidth: 0.5, borderColor: 'rgba(201,171,133,0.2)',
-    borderRadius: 8, padding: 16,
-    fontFamily: 'Jost_Regular', fontSize: 15, color: '#F0ECE4',
-    marginBottom: 12,
-  },
-  hint: {
-    fontFamily: 'Jost', fontSize: 12,
-    color: '#5A5650', lineHeight: 18,
-  },
+  successBox: { backgroundColor: 'rgba(159,225,203,0.08)', borderWidth: 0.5, borderRadius: 8, padding: 12, marginBottom: 16 },
+  successText: { fontFamily: 'CormorantGaramond_Italic', fontStyle: 'italic', fontSize: 15, textAlign: 'center' },
+  errorBox: { backgroundColor: 'rgba(240,153,123,0.1)', borderWidth: 0.5, borderRadius: 8, padding: 12, marginBottom: 16 },
+  errorText: { fontFamily: 'Jost', fontSize: 13, textAlign: 'center' },
+  avatarSection: { alignItems: 'center', marginBottom: 36, gap: 12 },
+  avatarWrapper: { position: 'relative' },
+  avatarImage: { width: 90, height: 90, borderRadius: 45, borderWidth: 0.5 },
+  avatarPlaceholder: { width: 90, height: 90, borderRadius: 45, borderWidth: 0.5, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontSize: 30 },
+  cameraBtn: { position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: '#13111A', alignItems: 'center', justifyContent: 'center' },
+  cameraBtnText: { color: '#13111A', fontSize: 18, fontWeight: 'bold', lineHeight: 20 },
+  avatarHint: { fontFamily: 'Jost', fontSize: 12 },
+  label: { fontFamily: 'Raleway', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 },
+  input: { borderWidth: 0.5, borderRadius: 8, padding: 16, fontFamily: 'Jost_Regular', fontSize: 15, marginBottom: 12 },
+  hint: { fontFamily: 'Jost', fontSize: 12, lineHeight: 18 },
 });

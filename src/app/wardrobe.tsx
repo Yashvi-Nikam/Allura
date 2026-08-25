@@ -7,10 +7,11 @@ import {
   FlatList,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
+import { SafeAreaView } from 'react-native-safe-area-context';
 import WardrobeItem from '@/components/WardrobeItem';
 import { useWardrobe } from '@/hooks/useWardrobe';
 import LoadingState from '@/components/LoadingState';
+import { useTheme } from '@/context/ThemeContext';
 
 const FILTERS = [
   'All',
@@ -24,6 +25,7 @@ const FILTERS = [
 
 export default function Wardrobe() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const {
     items,
@@ -33,18 +35,6 @@ export default function Wardrobe() {
 
   const [filter, setFilter] = useState('All');
 
-  /**
-   * Refresh whenever the wardrobe screen
-   * becomes active again.
-   *
-   * This means:
-   *
-   * Add item
-   * ↓
-   * go back
-   * ↓
-   * wardrobe automatically refreshes
-   */
   useFocusEffect(
     useCallback(() => {
       fetchWardrobe();
@@ -92,16 +82,33 @@ export default function Wardrobe() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: colors.background },
+      ]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
         >
-          <Text style={styles.back}>←</Text>
+          <Text
+            style={[
+              styles.back,
+              { color: colors.gold },
+            ]}
+          >
+            ←
+          </Text>
         </TouchableOpacity>
 
-        <Text style={styles.title}>
+        <Text
+          style={[
+            styles.title,
+            { color: colors.text },
+          ]}
+        >
           My Wardrobe
         </Text>
 
@@ -110,7 +117,12 @@ export default function Wardrobe() {
             router.push('/wardrobe-add')
           }
         >
-          <Text style={styles.addBtn}>
+          <Text
+            style={[
+              styles.addBtn,
+              { color: colors.gold },
+            ]}
+          >
             + Add
           </Text>
         </TouchableOpacity>
@@ -127,16 +139,26 @@ export default function Wardrobe() {
           <TouchableOpacity
             style={[
               styles.filterChip,
-              filter === item &&
-                styles.filterChipActive,
+              {
+                borderColor: colors.border,
+              },
+              filter === item && {
+                backgroundColor:
+                  colors.surfaceElevated,
+                borderColor: colors.gold,
+              },
             ]}
             onPress={() => setFilter(item)}
           >
             <Text
               style={[
                 styles.filterText,
-                filter === item &&
-                  styles.filterTextActive,
+                {
+                  color:
+                    filter === item
+                      ? colors.gold
+                      : colors.textMuted,
+                },
               ]}
             >
               {item}
@@ -148,19 +170,32 @@ export default function Wardrobe() {
       {/* Wardrobe grid */}
       {filtered.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>
+          <Text
+            style={[
+              styles.emptyText,
+              { color: colors.textMuted },
+            ]}
+          >
             {items.length === 0
               ? 'No items yet.\nAdd your first piece!'
               : 'No items in this category.'}
           </Text>
 
           <TouchableOpacity
-            style={styles.emptyBtn}
+            style={[
+              styles.emptyBtn,
+              { borderColor: colors.border },
+            ]}
             onPress={() =>
               router.push('/wardrobe-add')
             }
           >
-            <Text style={styles.emptyBtnText}>
+            <Text
+              style={[
+                styles.emptyBtnText,
+                { color: colors.gold },
+              ]}
+            >
               Add item ✦
             </Text>
           </TouchableOpacity>
@@ -184,12 +219,20 @@ export default function Wardrobe() {
 
       {/* Add button */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[
+          styles.fab,
+          { backgroundColor: colors.gold },
+        ]}
         onPress={() =>
           router.push('/wardrobe-add')
         }
       >
-        <Text style={styles.fabText}>
+        <Text
+          style={[
+            styles.fabText,
+            { color: colors.background },
+          ]}
+        >
           + Add item
         </Text>
       </TouchableOpacity>
@@ -200,7 +243,6 @@ export default function Wardrobe() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#13111A',
   },
 
   header: {
@@ -213,20 +255,17 @@ const styles = StyleSheet.create({
 
   back: {
     fontSize: 22,
-    color: '#C9AB85',
   },
 
   title: {
     fontFamily: 'CormorantGaramond_Reg',
     fontSize: 22,
-    color: '#F0ECE4',
   },
 
   addBtn: {
     fontFamily: 'Raleway',
     fontSize: 12,
     letterSpacing: 1,
-    color: '#C9AB85',
   },
 
   filterRow: {
@@ -240,25 +279,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 20,
     borderWidth: 0.5,
-    borderColor:
-      'rgba(201,171,133,0.2)',
     marginRight: 8,
-  },
-
-  filterChipActive: {
-    backgroundColor:
-      'rgba(201,171,133,0.15)',
-    borderColor: '#C9AB85',
   },
 
   filterText: {
     fontFamily: 'Jost',
     fontSize: 12,
-    color: '#5A5650',
-  },
-
-  filterTextActive: {
-    color: '#C9AB85',
   },
 
   grid: {
@@ -282,15 +308,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontFamily: 'Jost',
     fontSize: 14,
-    color: '#5A5650',
     textAlign: 'center',
     lineHeight: 22,
   },
 
   emptyBtn: {
     borderWidth: 0.5,
-    borderColor:
-      'rgba(201,171,133,0.3)',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 2,
@@ -300,7 +323,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Raleway',
     fontSize: 10,
     letterSpacing: 2,
-    color: '#C9AB85',
     textTransform: 'uppercase',
   },
 
@@ -308,7 +330,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 24,
     right: 24,
-    backgroundColor: '#C9AB85',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 2,
@@ -318,7 +339,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Raleway',
     fontSize: 10,
     letterSpacing: 2,
-    color: '#13111A',
     textTransform: 'uppercase',
   },
 });

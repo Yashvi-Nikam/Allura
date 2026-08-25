@@ -8,13 +8,14 @@ const THEME_KEY = '@allura_theme';
 interface ThemeContextType {
   isDark: boolean;
   toggleTheme: (value: boolean) => void;
-  colors: typeof Colors.dark;
+  // ✅ FIXED: Allow BOTH dark and light colors
+  colors: typeof Colors.dark | typeof Colors.light; 
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   isDark: true,
   toggleTheme: () => {},
-  colors: Colors.dark,
+  colors: Colors.dark, 
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
