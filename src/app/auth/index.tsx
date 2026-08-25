@@ -6,10 +6,13 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ NEW
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/context/ThemeContext';
+import * as WebBrowser from 'expo-web-browser';
 
 export default function Login() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
@@ -40,8 +43,23 @@ export default function Login() {
     }
   };
 
+  // 🚨 GOOGLE LOGIN FUNCTION
+  const handleGoogleLogin = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'allura://auth-callback',
+        skipBrowserRedirect: true,
+      },
+    });
+
+    if (data?.url) {
+      await WebBrowser.openAuthSessionAsync(data.url, 'allura://auth-callback');
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -52,22 +70,22 @@ export default function Login() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoWrap}>
-            <Text style={styles.logo}>Allura</Text>
-            <Text style={styles.tagline}>Welcome back ✦</Text>
+            <Text style={[styles.logo, { color: colors.gold }]}>Allura</Text>
+            <Text style={[styles.tagline, { color: colors.gold }]}>Welcome back ✦</Text>
           </View>
 
           {error ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
+            <View style={[styles.errorBox, { borderColor: colors.rose }]}>
+              <Text style={[styles.errorText, { color: colors.rose }]}>{error}</Text>
             </View>
           ) : null}
 
           <View style={styles.form}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={[styles.label, { color: colors.mauve }]}>Email</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
               placeholder="your@email.com"
-              placeholderTextColor="#5A5650"
+              placeholderTextColor={colors.textMuted}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -75,11 +93,11 @@ export default function Login() {
               returnKeyType="next"
             />
 
-            <Text style={styles.label}>Password</Text>
+            <Text style={[styles.label, { color: colors.mauve }]}>Password</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
               placeholder="••••••••"
-              placeholderTextColor="#5A5650"
+              placeholderTextColor={colors.textMuted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -91,28 +109,39 @@ export default function Login() {
               style={styles.forgotBtn}
               onPress={() => router.push('/auth/forgot' as any)}
             >
-              <Text style={styles.forgotText}>Forgot password?</Text>
+              <Text style={[styles.forgotText, { color: colors.mauve }]}>Forgot password?</Text>
             </TouchableOpacity>
 
+            {/* EMAIL/PASSWORD LOGIN */}
             <TouchableOpacity
-              style={[styles.submitBtn, loading && styles.submitDisabled]}
+              style={[styles.submitBtn, { backgroundColor: colors.gold }, loading && styles.submitDisabled]}
               onPress={handleLogin}
               disabled={loading}
               activeOpacity={0.8}
             >
-              <Text style={styles.submitText}>
+              <Text style={[styles.submitText, { color: colors.background }]}>
                 {loading ? 'Signing in...' : 'Sign in ✦'}
               </Text>
             </TouchableOpacity>
           </View>
 
+          {/* GOOGLE LOGIN BUTTON */}
+          <TouchableOpacity
+            style={[styles.googleBtn, { borderColor: colors.borderFocus }]}
+            onPress={handleGoogleLogin}
+          >
+            <Text style={[styles.googleBtnText, { color: colors.gold }]}>
+              Continue with Google
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.switchBtn}
             onPress={() => router.push('/auth/signup' as any)}
           >
-            <Text style={styles.switchText}>
+            <Text style={[styles.switchText, { color: colors.textMuted }]}>
               Don't have an account?{' '}
-              <Text style={styles.switchTextAccent}>Sign up</Text>
+              <Text style={[styles.switchTextAccent, { color: colors.gold }]}>Sign up</Text>
             </Text>
           </TouchableOpacity>
 
@@ -123,55 +152,56 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#13111A' },
+  container: { flex: 1 },
   scroll: { flexGrow: 1, padding: 32, justifyContent: 'center' },
   logoWrap: { alignItems: 'center', marginBottom: 48 },
   logo: {
-    fontFamily: 'DancingScript', fontSize: 52,
-    color: '#C9AB85', marginBottom: 8,
+    fontFamily: 'DancingScript', fontSize: 52, marginBottom: 8,
   },
   tagline: {
     fontFamily: 'CormorantGaramond_Italic', fontStyle: 'italic',
-    fontSize: 18, color: 'rgba(201,171,133,0.7)',
+    fontSize: 18,
   },
   errorBox: {
     backgroundColor: 'rgba(240,153,123,0.1)',
-    borderWidth: 0.5, borderColor: 'rgba(240,153,123,0.3)',
-    borderRadius: 8, padding: 12, marginBottom: 16,
+    borderWidth: 0.5, borderRadius: 8, padding: 12, marginBottom: 16,
   },
   errorText: {
-    fontFamily: 'Jost', fontSize: 13,
-    color: '#F0997B', textAlign: 'center',
+    fontFamily: 'Jost', fontSize: 13, textAlign: 'center',
   },
-  form: { marginBottom: 32 },
+  form: { marginBottom: 24 },
   label: {
     fontFamily: 'Raleway', fontSize: 9,
-    letterSpacing: 2, textTransform: 'uppercase',
-    color: '#9B7FA6', marginBottom: 8, marginTop: 16,
+    letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8, marginTop: 16,
   },
   input: {
-    backgroundColor: '#1E1A2E',
-    borderWidth: 0.5, borderColor: 'rgba(201,171,133,0.2)',
-    borderRadius: 8, padding: 16,
-    fontFamily: 'Jost_Regular', fontSize: 15, color: '#F0ECE4',
+    borderWidth: 0.5, borderRadius: 8, padding: 16,
+    fontFamily: 'Jost_Regular', fontSize: 15,
   },
   forgotBtn: {
     alignSelf: 'flex-end', marginTop: 10, marginBottom: 24,
   },
   forgotText: {
     fontFamily: 'Raleway', fontSize: 10,
-    letterSpacing: 1, color: '#9B7FA6', textTransform: 'uppercase',
+    letterSpacing: 1, textTransform: 'uppercase',
   },
   submitBtn: {
-    backgroundColor: '#C9AB85', padding: 18,
-    alignItems: 'center', borderRadius: 2,
+    padding: 18, alignItems: 'center', borderRadius: 2,
   },
   submitDisabled: { opacity: 0.5 },
   submitText: {
     fontFamily: 'Raleway', fontSize: 11,
-    letterSpacing: 3, textTransform: 'uppercase', color: '#13111A',
+    letterSpacing: 3, textTransform: 'uppercase',
+  },
+  googleBtn: {
+    borderWidth: 0.5, padding: 18, alignItems: 'center',
+    borderRadius: 2, marginBottom: 16,
+  },
+  googleBtnText: {
+    fontFamily: 'Raleway', fontSize: 11,
+    letterSpacing: 2, textTransform: 'uppercase',
   },
   switchBtn: { alignItems: 'center', padding: 8 },
-  switchText: { fontFamily: 'Jost', fontSize: 14, color: '#5A5650' },
-  switchTextAccent: { color: '#C9AB85', fontFamily: 'Jost_Regular' },
+  switchText: { fontFamily: 'Jost', fontSize: 14 },
+  switchTextAccent: { fontFamily: 'Jost_Regular' },
 });
