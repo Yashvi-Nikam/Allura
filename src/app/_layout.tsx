@@ -41,7 +41,10 @@ function RootLayoutInner() {
           contentStyle: { backgroundColor: colors.background },
           animation: 'fade',
         }}
-      />
+      >
+        {/* ✅ ADDED THE AUTH-CALLBACK SCREEN HERE */}
+        <Stack.Screen name="auth-callback" />
+      </Stack>
     </>
   );
 }
@@ -77,4 +80,3 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
-
