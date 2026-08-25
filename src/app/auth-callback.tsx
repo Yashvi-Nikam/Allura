@@ -7,15 +7,35 @@ export default function AuthCallback() {
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        // Go straight to Onboarding!
-        router.replace('/onboarding');
+    const handleCallback = async () => {
+      // 1. Parse the URL to see if we have a code
+      const url = window.location.href; // Or the deep link URL from the app
+      
+      // Check if it has a code (this is how Google sends it)
+      const code = new URLSearchParams(url.split('?')[1]).get('code');
+      
+      if (code) {
+        // 2. EXCHANGE THE CODE FOR A SESSION!
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        
+        if (!error && data.session) {
+          router.replace('/onboarding');
+        } else {
+          router.replace('/auth');
+        }
       } else {
-        // If something went wrong, go to login
-        router.replace('/auth');
+        // If no code, just check if they're already logged in
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            router.replace('/onboarding');
+          } else {
+            router.replace('/auth');
+          }
+        });
       }
-    });
+    };
+
+    handleCallback();
   }, []);
 
   return (
