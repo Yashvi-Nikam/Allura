@@ -7,16 +7,23 @@ export default function Confirm() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is now confirmed
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Listen for when the session appears (it takes a tiny delay)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        // User confirmed and logged in — go to onboarding
+        // User is now confirmed and logged in
         router.replace('/onboarding');
-      } else {
-        // Something went wrong — back to login
-        router.replace('/auth' as any);
       }
     });
+
+    // Also check immediately in case session is already there
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.replace('/onboarding');
+      }
+    });
+
+    // Cleanup the listener when component unmounts
+    return () => authListener.subscription.unsubscribe();
   }, []);
 
   return (
